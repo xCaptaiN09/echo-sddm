@@ -1,10 +1,6 @@
 // Echo SDDM Theme — Main.qml
 // macOS Terminal aesthetic | xCaptaiN09
-//
-// Qt 6 + qt6-5compat required (Arch: sudo pacman -S qt6-5compat)
-// Qt 5: replace "Qt5Compat.GraphicalEffects" → "QtGraphicalEffects 1.0"
-//
-// Real sysinfo in test mode: QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme ...
+// Qt6 only. Requires qt6-5compat for frosted glass blur.
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
@@ -19,27 +15,33 @@ Rectangle {
     focus:  true
 
     // ─── Config ───────────────────────────────────────────────────────────────
-    property string themeType: config.type        || "pure"    // "pure" | "frosted"
-    property string loginMode: config.login_mode  || "select"  // "tty"  | "select"
+    property string themeType: config.type        || "pure"
+    property string loginMode: config.login_mode  || "select"
     property string bgPath:    config.background  || ""
     property string cfgFont:   config.font        || "JetBrains Mono"
     property int    fontSize:  parseInt(config.font_size)     > 0 ? parseInt(config.font_size)     : 14
     property int    bootMs:    parseInt(config.boot_interval) > 0 ? parseInt(config.boot_interval) : 72
     property real   bgOpacity:  parseFloat(config.background_opacity) > 0 ? parseFloat(config.background_opacity) : 0.78
     property int    blurRadius: parseInt(config.blur_radius) > 0 ? parseInt(config.blur_radius) : 54
-    property bool   use24h:    config.use_24h !== "false" && config.use_24h !== "0"  // default true
+    property bool   use24h:    config.use_24h !== "false" && config.use_24h !== "0"
     property string timeFmt:   use24h ? "HH:mm" : "h:mm AP"
+    property string dateTimeFmt: use24h ? "ddd dd MMM  HH:mm" : "ddd dd MMM  h:mm AP"
 
     // ─── Real system info ─────────────────────────────────────────────────────
     property string realDistro: "Arch Linux"
-    property string realKernel: "linux"
+    property string realKernel: ""
     property string realUptime: ""
 
     function readFile(path) {
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", path, false)
-        try { xhr.send() } catch(e) { return "" }
-        return xhr.responseText || ""
+        try {
+            var xhr = new XMLHttpRequest()
+            xhr.open("GET", path, false)
+            xhr.send()
+            if (xhr.status === 200 || xhr.status === 0) return xhr.responseText || ""
+            return ""
+        } catch(e) {
+            return ""
+        }
     }
 
     function loadSysInfo() {
@@ -52,7 +54,8 @@ Rectangle {
         if (km) realKernel = km[1]
 
         var up = readFile("/proc/uptime")
-        var secs = parseFloat(up.split(" ")[0])
+        var parts = up.split(" ")
+        var secs = parts.length > 0 ? parseFloat(parts[0]) : NaN
         if (!isNaN(secs)) {
             var h = Math.floor(secs / 3600)
             var m = Math.floor((secs % 3600) / 60)
@@ -60,7 +63,10 @@ Rectangle {
         }
     }
 
-    Component.onCompleted: { loadSysInfo(); buildBootLog() }
+    Component.onCompleted: {
+        try { loadSysInfo() } catch(e) { console.log("loadSysInfo error:", e) }
+        try { buildBootLog() } catch(e) { console.log("buildBootLog error:", e) }
+    }
 
     property string dispHost: sddm.hostName.length > 0 ? sddm.hostName : "localhost"
 
@@ -72,15 +78,13 @@ Rectangle {
     property int    userIdx:    0
     property int    sessIdx:    sessionModel.lastIndex
     property int    ttySession: sessionModel.lastIndex
-    property int    focusRow:   0   // 0=user, 1=session, 2=password
+    property int    focusRow:   0
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
-    // Fallback data for test mode (models may be empty)
     property var mockUsers:    ["captain", "guest"]
     property var mockSessions: ["hyprland", "hyprland-uwsm"]
     property bool isTestMode:  userModel.rowCount() === 0
 
-    // Hidden Repeaters to access model.name correctly
     Repeater {
         id: userRep; model: userModel
         delegate: Item { visible:false; width:0; height:0
@@ -92,8 +96,21 @@ Rectangle {
             property string sessName: model.name || "" }
     }
 
-    function userName(i) { if (userRep.count === 0) return mockUsers[i] || "";    var item = userRep.itemAt(i); return item ? item.loginName : "" }
-    function sessName(i) { if (sessRep.count === 0) return mockSessions[i] || ""; var item = sessRep.itemAt(i); return item ? item.sessName  : "" }
+    function userName(i) {
+        if (userRep.count === 0) return mockUsers[i] || ""
+        var item = userRep.itemAt(i)
+        return item ? item.loginName : ""
+    }
+
+    function sessName(i) {
+        if (sessRep.count === 0) return mockSessions[i] || ""
+        var item = sessRep.itemAt(i)
+        var raw = item ? item.sessName : ""
+        if (raw.indexOf("/") !== -1) raw = raw.substring(raw.lastIndexOf("/") + 1)
+        if (raw.endsWith(".desktop")) raw = raw.substring(0, raw.length - 8)
+        return raw || "session"
+    }
+
     function userCount() { return userRep.count === 0 ? mockUsers.length    : userModel.rowCount()    }
     function sessCount() { return sessRep.count === 0 ? mockSessions.length : sessionModel.rowCount() }
 
@@ -109,7 +126,7 @@ Rectangle {
         function onLoginSucceeded() {}
         function onLoginFailed() {
             didFail = true
-            failMsg = "Login incorrect. Please try again."
+            failMsg = "Login incorrect"
             if (loginMode === "tty") {
                 ttyPwd.text = ""
                 ttyPwd.forceActiveFocus()
@@ -120,7 +137,7 @@ Rectangle {
         }
     }
 
-    // ─── F1/F2 session switch (TTY mode) ──────────────────────────────────────
+    // ─── Keyboard ─────────────────────────────────────────────────────────────
     Keys.onPressed: function(event) {
         if (!bootDone) return
 
@@ -343,11 +360,11 @@ Rectangle {
                 Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
                 font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
                 property string curTime: Qt.formatTime(new Date(), timeFmt)
-                text: dispHost + "  |  " + realDistro + "  |  " + realKernel
+                text: dispHost + "  |  " + realDistro
                     + (realUptime.length > 0 ? "  |  up " + realUptime : "")
                     + "  |  " + curTime
                 Timer { interval: 30000; running: true; repeat: true
-                    onTriggered: sysInfo.curTime = Qt.formatTime(new Date(), "HH:mm") }
+                    onTriggered: sysInfo.curTime = Qt.formatTime(new Date(), timeFmt) }
             }
 
             Item { width: 1; height: 18; visible: bootDone }
@@ -419,6 +436,18 @@ Rectangle {
                     }
                 }
 
+                // TTY-style inline error
+                Row {
+                    visible: didFail && loginMode === "tty"
+                    spacing: 0
+                    Text {
+                        text: failMsg
+                        font.family: cfgFont; font.pixelSize: fontSize; color: "#e05252"
+                        opacity: didFail ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: 200 } }
+                    }
+                }
+
                 Item { width: 1; height: 10 }
                 Row {
                     spacing: 0
@@ -452,7 +481,7 @@ Rectangle {
                     Text { text: sessName(sessIdx); font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
                     Text {
                         text: "  ◀ ▶"; font.family: cfgFont; font.pixelSize: fontSize
-                        color: focusRow === 1 ? "#bebec2" : "#444448"
+                        color: focusRow === 1 ? "#ffffff" : "#444448"
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
                 }
@@ -483,25 +512,41 @@ Rectangle {
                         }
                     }
                 }
+
+                // Select-mode inline error
+                Row {
+                    visible: didFail && loginMode === "select"
+                    spacing: 0
+                    Text {
+                        text: failMsg
+                        font.family: cfgFont; font.pixelSize: fontSize; color: "#e05252"
+                        opacity: didFail ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: 200 } }
+                    }
+                }
+            }
+
+            // Lock indicators (both modes)
+            Column {
+                visible: bootDone
+                spacing: 1
+                width: parent.width
+
+                Row {
+                    visible: sddm.capsLock !== undefined && sddm.capsLock
+                    spacing: 4
+                    Text { text: "⚠"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
+                    Text { text: "Caps Lock is on"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
+                }
+                Row {
+                    visible: sddm.numLock !== undefined && sddm.numLock
+                    spacing: 4
+                    Text { text: "⚠"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
+                    Text { text: "Num Lock is on"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
+                }
             }
 
             Item { width: 1; height: 20; visible: bootDone }
-
-            // Error
-            Item {
-                visible: bootDone
-                width:   termCol.width
-                height:  didFail ? errText.implicitHeight + 4 : 0
-                clip: true
-                Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Text {
-                    id: errText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: failMsg; font.family: cfgFont; font.pixelSize: fontSize; color: "#e8853a"
-                    opacity: didFail ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 300 } }
-                }
-            }
 
             Item { width: 1; height: 24 }
         }
@@ -525,35 +570,45 @@ Rectangle {
         }
     }
 
-    // ─── Boot log lines (generated from real system data) ─────────────────────
+    // ─── Boot log lines ───────────────────────────────────────────────────────
     property var bootLog: []
 
     function buildBootLog() {
         var lines = []
         var cpu = "", ram = "", vendor = "", product = "", modules = ""
 
-        // CPU model
-        var cpuinfo = readFile("/proc/cpuinfo")
-        var cm = cpuinfo.match(/model name\s*:\s*(.+)/)
-        if (cm) cpu = cm[1].trim()
+        try {
+            var cpuinfo = readFile("/proc/cpuinfo")
+            var cm = cpuinfo.match(/model name\s*:\s*(.+)/)
+            if (cm) cpu = cm[1].trim()
+        } catch(e) {}
 
-        // RAM
-        var meminfo = readFile("/proc/meminfo")
-        var mm = meminfo.match(/MemTotal:\s+(\d+)/)
-        if (mm) {
-            var kb = parseInt(mm[1])
-            ram = kb >= 1048576 ? (kb / 1048576).toFixed(1) + " GB" : Math.round(kb / 1024) + " MB"
-        }
+        try {
+            var meminfo = readFile("/proc/meminfo")
+            var mm = meminfo.match(/MemTotal:\s+(\d+)/)
+            if (mm) {
+                var kb = parseInt(mm[1])
+                ram = kb >= 1048576 ? (kb / 1048576).toFixed(1) + " GB" : Math.round(kb / 1024) + " MB"
+            }
+        } catch(e) {}
 
-        // Hardware vendor/product
-        vendor  = readFile("/sys/class/dmi/id/sys_vendor").trim()
-        product = readFile("/sys/class/dmi/id/product_name").trim()
+        try {
+            vendor  = readFile("/sys/class/dmi/id/sys_vendor").trim()
+            product = readFile("/sys/class/dmi/id/product_name").trim()
+        } catch(e) {}
 
-        // Module count
-        var mods = readFile("/proc/modules")
-        if (mods.length > 0) modules = mods.split("\n").filter(function(l) { return l.length > 0 }).length.toString()
+        try {
+            var mods = readFile("/proc/modules")
+            if (mods.length > 0) {
+                var modList = mods.split("\n")
+                var count = 0
+                for (var i = 0; i < modList.length; i++) {
+                    if (modList[i].length > 0) count++
+                }
+                modules = count.toString()
+            }
+        } catch(e) {}
 
-        // Build lines
         lines.push({ s: "OK", m: "Starting " + dispHost + "..." })
         if (vendor.length > 0 && product.length > 0)
             lines.push({ s: "OK", m: "Detected hardware: " + vendor + " " + product })
@@ -571,6 +626,12 @@ Rectangle {
         lines.push({ s: "OK", m: "Reached target Graphical Interface." })
         lines.push({ s: "OK", m: "Started SDDM Display Manager." })
         lines.push({ s: "OK", m: "Welcome to " + realDistro + "." })
+
+        // Filler when SDDM blocks /proc reads — keeps log from looking empty
+        if (cpu.length === 0 && ram.length === 0 && modules.length === 0 && vendor.length === 0) {
+            lines.splice(4, 0, { s: "OK", m: "System initialized." })
+        }
+
         bootLog = lines
     }
 
@@ -580,8 +641,8 @@ Rectangle {
         anchors.top: parent.top; anchors.right: parent.right
         anchors.topMargin: 16; anchors.rightMargin: 20
         font.family: cfgFont; font.pixelSize: 12; color: "#3e3e42"
-        Component.onCompleted: text = Qt.formatTime(new Date(), timeFmt)
+        Component.onCompleted: text = Qt.formatDateTime(new Date(), dateTimeFmt)
         Timer { interval: 10000; running: true; repeat: true
-            onTriggered: clockLabel.text = Qt.formatTime(new Date(), timeFmt) }
+            onTriggered: clockLabel.text = Qt.formatDateTime(new Date(), dateTimeFmt) }
     }
 }

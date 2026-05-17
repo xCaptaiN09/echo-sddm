@@ -20,9 +20,17 @@ echo -e "${BLUE}==>${NC} Starting Echo SDDM Installation..."
 # 1. DEPENDENCY CHECK
 if ! command -v sddm-greeter-qt6 >/dev/null 2>&1; then
     echo -e "${RED}Error:${NC} sddm-greeter-qt6 not found. Install SDDM with Qt 6 support first."
+    echo -e "   Arch: sudo pacman -S sddm"
     exit 1
 fi
-echo -e "${BLUE}==>${NC} Detected: ${GREEN}Qt6${NC}"
+
+if ! pacman -Q qt6-5compat >/dev/null 2>&1; then
+    echo -e "${RED}Error:${NC} qt6-5compat not found. Required for frosted glass blur."
+    echo -e "   Arch: sudo pacman -S qt6-5compat"
+    exit 1
+fi
+
+echo -e "${BLUE}==>${NC} Detected: ${GREEN}Qt6${NC} + ${GREEN}qt6-5compat${NC}"
 
 # 2. NIXOS CHECK
 if [ -f /etc/NIXOS ]; then

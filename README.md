@@ -15,36 +15,46 @@ A macOS Terminal-inspired SDDM login theme. Dark monospace aesthetic, frosted gl
 ## Features
 
 - **macOS Terminal UI:** Dark window with traffic light buttons (shutdown, reboot, suspend), title bar, and rounded corners.
-- **Real Boot Animation:** Fake systemd log lines generated from your actual hardware — CPU, RAM, kernel, modules, distro.
+- **Boot Animation:** systemd-style log lines with real hardware detection (CPU, RAM, modules, vendor) when available.
 - **Two Background Modes:** Pure black or frosted glass (wallpaper + blur).
 - **Two Login Modes:** Arrow-key user/session picker or TTY-style manual login.
-- **Real System Info:** Hostname, distro, kernel version, uptime — all read live from `/proc` and `/etc/os-release`.
+- **System Info:** Hostname, distro, uptime, and date/time in the info bar.
+- **Lock Indicators:** Caps Lock and Num Lock warnings inline.
+- **Terminal-Style Errors:** Login failures show as inline red text, not centered banners.
 - **24h/12h Clock:** Configurable via `theme.conf`.
 
 ---
 
 ## Prerequisites
 
-Qt6 with qt6-5compat (for FastBlur and OpacityMask):
+- **Qt6** with **qt6-5compat** (for `FastBlur` and `OpacityMask`)
+- SDDM **0.19+** with Qt6 greeter support
+- JetBrains Mono font (or set a different font in `theme.conf`)
 
 ```bash
-# Arch
-sudo pacman -S qt6-declarative qt6-5compat
+# Arch Linux
+sudo pacman -S sddm qt6-5compat
 
 # Fedora
-sudo dnf install qt6-qtdeclarative qt6-qt5compat
+sudo dnf install sddm qt6-qt5compat
 
 # Debian 13/Testing
-sudo apt install libqt6quick6 libqt6qml6 qt6-5compat-dev
+sudo apt install sddm libqt6quick6 libqt6qml6 qt6-5compat-dev
 ```
 
-JetBrains Mono font must be installed (or set a different font in `theme.conf`).
+> **Note:** This theme is **Qt6-only**. It will not work with Qt5 SDDM.
 
 ---
 
 ## Installation
 
-### Method A: Install Script (Recommended)
+### Method A: Arch Linux (AUR)
+
+```bash
+yay -S echo-sddm-git
+```
+
+### Method B: Install Script
 
 ```bash
 git clone https://github.com/xCaptaiN09/echo-sddm.git
@@ -52,26 +62,21 @@ cd echo-sddm
 sudo ./install.sh
 ```
 
-The script backs up your existing config, installs the theme, and restores your settings.
-
-### Method B: Arch Linux (AUR)
-
-```bash
-yay -S echo-sddm-git
-```
+The script checks for `qt6-5compat`, backs up your existing config, installs the theme, and restores your settings.
 
 ### Method C: Manual
 
-1. Copy to SDDM themes directory:
-   ```bash
-   sudo cp -r echo-sddm /usr/share/sddm/themes/echo
-   ```
-2. Set the theme:
-   ```ini
-   # /etc/sddm.conf.d/theme.conf
-   [Theme]
-   Current=echo
-   ```
+```bash
+sudo mkdir -p /usr/share/sddm/themes/echo
+sudo cp -r Main.qml metadata.desktop theme.conf install.sh LICENSE assets /usr/share/sddm/themes/echo/
+```
+
+Then set the theme:
+
+```bash
+sudo mkdir -p /etc/sddm.conf.d
+echo -e "[Theme]\nCurrent=echo" | sudo tee /etc/sddm.conf.d/theme.conf
+```
 
 ---
 
@@ -80,14 +85,22 @@ yay -S echo-sddm-git
 Preview without logging out:
 
 ```bash
-QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/echo
+sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/echo
 ```
 
-> `QML_XHR_ALLOW_FILE_READ=1` is only needed in test mode. Real SDDM reads system files automatically.
+> **Note:** In test mode, `XMLHttpRequest` to local files is blocked by default. Use `QML_XHR_ALLOW_FILE_READ=1` if you want to see real CPU/RAM data in the boot log:
+> ```bash
+> QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/echo
+> ```
+> In real SDDM, `/proc` reads are blocked for security. The boot log falls back to hardcoded systemd-style lines.
 
-### Important: Qt6 Greeter
+---
 
-This theme requires the Qt6 greeter. If SDDM fails to load the theme, make sure it uses the Qt6 greeter:
+## Qt6 Greeter
+
+This theme declares `QtVersion=6` in `metadata.desktop`. SDDM 0.21+ will automatically use the Qt6 greeter (`sddm-greeter-qt6`).
+
+If you are on an older SDDM or a distro that defaults to Qt5, force the Qt6 greeter:
 
 ```bash
 sudo ln -sf /usr/bin/sddm-greeter-qt6 /usr/bin/sddm-greeter
@@ -97,7 +110,7 @@ sudo ln -sf /usr/bin/sddm-greeter-qt6 /usr/bin/sddm-greeter
 
 ## Configuration
 
-Edit `theme.conf`:
+Edit `/usr/share/sddm/themes/echo/theme.conf` (or edit before running `install.sh`):
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -107,13 +120,11 @@ Edit `theme.conf`:
 | `font` | `JetBrains Mono` | Any installed monospace font |
 | `font_size` | `14` | Font size in pixels |
 | `boot_interval` | `72` | Milliseconds per boot log line |
-| `use_24h` | `true` | `true` for 24h, `false` for 12h with AM/PM |
-| `background_opacity` | `0.78` | Frosted glass opacity (0.0–1.0) |
+| `use_24h` | `false` | `true` for 24h, `false` for 12h with AM/PM |
+| `background_opacity` | `0.35` | Frosted glass opacity (0.0–1.0) |
 | `blur_radius` | `54` | Blur strength for frosted mode (0–100) |
 
 ### Frosted Glass
-
-Set `type=frosted` and point `background` to a wallpaper:
 
 ```ini
 type=frosted
@@ -121,8 +132,6 @@ background=assets/backgrounds/background.png
 ```
 
 ### TTY Mode
-
-Set `login_mode=tty` for a real Linux TTY-style login:
 
 ```ini
 login_mode=tty
@@ -169,4 +178,4 @@ Type your username, press Enter, type password, press Enter to login. F1/F2 cycl
 
 ---
 
-*Made with 💙 for the Linux community*
+*MIT License*
