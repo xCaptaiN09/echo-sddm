@@ -25,6 +25,8 @@ Rectangle {
     property string cfgFont:   config.font        || "JetBrains Mono"
     property int    fontSize:  parseInt(config.font_size)     > 0 ? parseInt(config.font_size)     : 14
     property int    bootMs:    parseInt(config.boot_interval) > 0 ? parseInt(config.boot_interval) : 72
+    property bool   use24h:    config.use_24h !== "false" && config.use_24h !== "0"  // default true
+    property string timeFmt:   use24h ? "HH:mm" : "h:mm AP"
 
     // ─── Real system info ─────────────────────────────────────────────────────
     property string realDistro: "Arch Linux"
@@ -71,6 +73,11 @@ Rectangle {
     property int    focusRow:   0   // 0=user, 1=session, 2=password
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+    // Fallback data for test mode (models may be empty)
+    property var mockUsers:    ["captain", "guest"]
+    property var mockSessions: ["hyprland", "hyprland-uwsm"]
+    property bool isTestMode:  userModel.rowCount() === 0
+
     // Hidden Repeaters to access model.name correctly
     Repeater {
         id: userRep; model: userModel
@@ -83,10 +90,10 @@ Rectangle {
             property string sessName: model.name || "" }
     }
 
-    function userName(i) { var item = userRep.itemAt(i); return item ? item.loginName : "" }
-    function sessName(i) { var item = sessRep.itemAt(i); return item ? item.sessName  : "" }
-    function userCount() { return userModel.rowCount()    }
-    function sessCount() { return sessionModel.rowCount() }
+    function userName(i) { if (userRep.count === 0) return mockUsers[i] || "";    var item = userRep.itemAt(i); return item ? item.loginName : "" }
+    function sessName(i) { if (sessRep.count === 0) return mockSessions[i] || ""; var item = sessRep.itemAt(i); return item ? item.sessName  : "" }
+    function userCount() { return userRep.count === 0 ? mockUsers.length    : userModel.rowCount()    }
+    function sessCount() { return sessRep.count === 0 ? mockSessions.length : sessionModel.rowCount() }
 
     function doLogin(user, pwd, sess) {
         didFail = false
@@ -333,7 +340,7 @@ Rectangle {
                 opacity: 0.0
                 Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
                 font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
-                property string curTime: Qt.formatTime(new Date(), "HH:mm")
+                property string curTime: Qt.formatTime(new Date(), timeFmt)
                 text: dispHost + "  |  " + realDistro + "  |  " + realKernel
                     + (realUptime.length > 0 ? "  |  up " + realUptime : "")
                     + "  |  " + curTime
@@ -571,8 +578,8 @@ Rectangle {
         anchors.top: parent.top; anchors.right: parent.right
         anchors.topMargin: 16; anchors.rightMargin: 20
         font.family: cfgFont; font.pixelSize: 12; color: "#3e3e42"
-        Component.onCompleted: text = Qt.formatTime(new Date(), "HH:mm")
+        Component.onCompleted: text = Qt.formatTime(new Date(), timeFmt)
         Timer { interval: 10000; running: true; repeat: true
-            onTriggered: clockLabel.text = Qt.formatTime(new Date(), "HH:mm") }
+            onTriggered: clockLabel.text = Qt.formatTime(new Date(), timeFmt) }
     }
 }
