@@ -1,0 +1,9 @@
+[SddmGreeterTheme]
+Name=Echo
+Description=macOS Terminal-style SDDM login theme
+Author=xCaptaiN09
+Version=1.0
+License=MIT
+Type=sddm-theme
+MainScript=Main.qml
+ConfigFile=theme.conf
