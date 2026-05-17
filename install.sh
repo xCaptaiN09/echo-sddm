@@ -67,6 +67,12 @@ if [ -f "${BACKUP_DIR}/theme.conf" ]; then
     if ! grep -q "^use_24h=" "${THEME_DIR}/theme.conf"; then
         sed -i '/^boot_interval=/a use_24h=true' "${THEME_DIR}/theme.conf"
     fi
+    if ! grep -q "^background_opacity=" "${THEME_DIR}/theme.conf"; then
+        sed -i '/^boot_interval=/a background_opacity=0.78' "${THEME_DIR}/theme.conf"
+    fi
+    if ! grep -q "^blur_radius=" "${THEME_DIR}/theme.conf"; then
+        sed -i '/^background_opacity=/a blur_radius=54' "${THEME_DIR}/theme.conf"
+    fi
 fi
 
 rm -rf "${BACKUP_DIR}"

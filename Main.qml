@@ -25,6 +25,8 @@ Rectangle {
     property string cfgFont:   config.font        || "JetBrains Mono"
     property int    fontSize:  parseInt(config.font_size)     > 0 ? parseInt(config.font_size)     : 14
     property int    bootMs:    parseInt(config.boot_interval) > 0 ? parseInt(config.boot_interval) : 72
+    property real   bgOpacity:  parseFloat(config.background_opacity) > 0 ? parseFloat(config.background_opacity) : 0.78
+    property int    blurRadius: parseInt(config.blur_radius) > 0 ? parseInt(config.blur_radius) : 54
     property bool   use24h:    config.use_24h !== "false" && config.use_24h !== "0"  // default true
     property string timeFmt:   use24h ? "HH:mm" : "h:mm AP"
 
@@ -190,7 +192,7 @@ Rectangle {
             FastBlur {
                 anchors.fill: parent
                 source: bgCap
-                radius: 54
+                radius: blurRadius
             }
             layer.enabled: true
             layer.effect: OpacityMask {
@@ -207,7 +209,7 @@ Rectangle {
         Rectangle {
             anchors.fill: parent
             radius:       termWin.radius
-            color:        bgImage.visible ? Qt.rgba(0.06, 0.06, 0.06, 0.78) : "#1c1c1e"
+            color:        bgImage.visible ? Qt.rgba(0.06, 0.06, 0.06, bgOpacity) : "#1c1c1e"
             border.color: bgImage.visible ? Qt.rgba(1, 1, 1, 0.09)          : "#303034"
             border.width: 1
         }

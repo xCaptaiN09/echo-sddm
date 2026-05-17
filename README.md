@@ -3,8 +3,13 @@
 A macOS Terminal-inspired SDDM login theme. Dark monospace aesthetic, frosted glass, boot animation with real system data, and two login modes.
 
 <div align="center">
-  <img src="assets/screenshots/pure.png" width="45%" alt="Pure Mode" />
-  <img src="assets/screenshots/frosted.png" width="45%" alt="Frosted Mode" />
+  <img src="assets/screenshots/Screenshot_1.png" width="45%" />
+  <img src="assets/screenshots/Screenshot_2.png" width="45%" />
+</div>
+<div align="center">
+  <img src="assets/screenshots/Screenshot_3.png" width="30%" />
+  <img src="assets/screenshots/Screenshot_4.png" width="30%" />
+  <img src="assets/screenshots/Screenshot_5.png" width="30%" />
 </div>
 
 ## Features
@@ -75,7 +80,7 @@ yay -S echo-sddm-git
 Preview without logging out:
 
 ```bash
-QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /path/to/echo-sddm
+QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/themes/echo
 ```
 
 > `QML_XHR_ALLOW_FILE_READ=1` is only needed in test mode. Real SDDM reads system files automatically.
@@ -95,6 +100,8 @@ Edit `theme.conf`:
 | `font_size` | `14` | Font size in pixels |
 | `boot_interval` | `72` | Milliseconds per boot log line |
 | `use_24h` | `true` | `true` for 24h, `false` for 12h with AM/PM |
+| `background_opacity` | `0.78` | Frosted glass opacity (0.0–1.0) |
+| `blur_radius` | `54` | Blur strength for frosted mode (0–100) |
 
 ### Frosted Glass
 
@@ -151,3 +158,7 @@ Type your username, press Enter, type password, press Enter to login. F1/F2 cycl
 - **Author:** [xCaptaiN09](https://github.com/xCaptaiN09)
 - **Design:** Inspired by macOS Terminal.app
 - **Font:** JetBrains Mono (system font, not bundled)
+
+---
+
+*Made with 💙 for the Linux community*
