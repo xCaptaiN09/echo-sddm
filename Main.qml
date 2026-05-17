@@ -238,6 +238,7 @@ Rectangle {
                     Behavior on color { ColorAnimation { duration: 120 } }
                     Text {
                         anchors.centerIn: parent
+                        anchors.horizontalCenterOffset: -1
                         text: "⏻"; font.pixelSize: 8; color: "#0d0d0d"
                         visible: parent.h
                     }
@@ -256,6 +257,7 @@ Rectangle {
                     Behavior on color { ColorAnimation { duration: 120 } }
                     Text {
                         anchors.centerIn: parent
+                        anchors.horizontalCenterOffset: -1
                         text: "↺"; font.pixelSize: 8; color: "#0d0d0d"
                         visible: parent.h
                     }
@@ -360,6 +362,10 @@ Rectangle {
                         selectByMouse: false
                         Keys.onReturnPressed: function(e) { e.accepted = true; ttyPwd.forceActiveFocus() }
                         Keys.onTabPressed:    function(e) { e.accepted = true; ttyPwd.forceActiveFocus() }
+                        Keys.onPressed: function(e) {
+                            if (e.key === Qt.Key_F1)      { ttySession = (ttySession - 1 + sessCount()) % sessCount(); e.accepted = true }
+                            else if (e.key === Qt.Key_F2) { ttySession = (ttySession + 1) % sessCount(); e.accepted = true }
+                        }
                     }
                     Rectangle {
                         width: 9; height: fontSize + 3; color: "#bebec2"
@@ -386,6 +392,10 @@ Rectangle {
                         selectByMouse: false
                         Keys.onReturnPressed: function(e) { e.accepted = true; doLogin(ttyUser.text, ttyPwd.text, ttySession) }
                         Keys.onTabPressed:    function(e) { e.accepted = true; ttyUser.forceActiveFocus() }
+                        Keys.onPressed: function(e) {
+                            if (e.key === Qt.Key_F1)      { ttySession = (ttySession - 1 + sessCount()) % sessCount(); e.accepted = true }
+                            else if (e.key === Qt.Key_F2) { ttySession = (ttySession + 1) % sessCount(); e.accepted = true }
+                        }
                     }
                     Rectangle {
                         width: 9; height: fontSize + 3; color: "#bebec2"
