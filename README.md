@@ -95,7 +95,7 @@ Edit `theme.conf`:
 |--------|---------|-------------|
 | `type` | `pure` | `pure` (black) or `frosted` (wallpaper + blur) |
 | `login_mode` | `select` | `select` (arrow keys) or `tty` (type username) |
-| `background` | *(empty)* | Wallpaper path for frosted mode |
+| `background` | `assets/backgrounds/background.png` | Wallpaper path for frosted mode |
 | `font` | `JetBrains Mono` | Any installed monospace font |
 | `font_size` | `14` | Font size in pixels |
 | `boot_interval` | `72` | Milliseconds per boot log line |
