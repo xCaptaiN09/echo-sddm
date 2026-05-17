@@ -56,7 +56,7 @@ Rectangle {
         }
     }
 
-    Component.onCompleted: loadSysInfo()
+    Component.onCompleted: { loadSysInfo(); buildBootLog() }
 
     property string dispHost: sddm.hostName.length > 0 ? sddm.hostName : "localhost"
 
@@ -506,18 +506,54 @@ Rectangle {
         }
     }
 
-    // ─── Boot log lines ───────────────────────────────────────────────────────
-    property var bootLog: [
-        { s: "OK",   m: "Reached target Switch Root."          },
-        { s: "OK",   m: "Started Journal Service."             },
-        { s: "FAIL", m: "Failed to start Load Kernel Modules." },
-        { s: "OK",   m: "Mounted /sys/kernel/security."        },
-        { s: "OK",   m: "Started Udev Coldplug all Devices."   },
-        { s: "OK",   m: "Started Udev Coldplug."               },
-        { s: "OK",   m: "Started Rootet Kernel Service."       },
-        { s: "OK",   m: "Started target Journal Storage."      },
-        { s: "OK",   m: "Started target USB Loan Service."     }
-    ]
+    // ─── Boot log lines (generated from real system data) ─────────────────────
+    property var bootLog: []
+
+    function buildBootLog() {
+        var lines = []
+        var cpu = "", ram = "", vendor = "", product = "", modules = ""
+
+        // CPU model
+        var cpuinfo = readFile("/proc/cpuinfo")
+        var cm = cpuinfo.match(/model name\s*:\s*(.+)/)
+        if (cm) cpu = cm[1].trim()
+
+        // RAM
+        var meminfo = readFile("/proc/meminfo")
+        var mm = meminfo.match(/MemTotal:\s+(\d+)/)
+        if (mm) {
+            var kb = parseInt(mm[1])
+            ram = kb >= 1048576 ? (kb / 1048576).toFixed(1) + " GB" : Math.round(kb / 1024) + " MB"
+        }
+
+        // Hardware vendor/product
+        vendor  = readFile("/sys/class/dmi/id/sys_vendor").trim()
+        product = readFile("/sys/class/dmi/id/product_name").trim()
+
+        // Module count
+        var mods = readFile("/proc/modules")
+        if (mods.length > 0) modules = mods.split("\n").filter(function(l) { return l.length > 0 }).length.toString()
+
+        // Build lines
+        lines.push({ s: "OK", m: "Starting " + dispHost + "..." })
+        if (vendor.length > 0 && product.length > 0)
+            lines.push({ s: "OK", m: "Detected hardware: " + vendor + " " + product })
+        lines.push({ s: "OK", m: "Reached target Switch Root." })
+        lines.push({ s: "OK", m: "Started Journal Service." })
+        lines.push({ s: "OK", m: "Mounted /sys/kernel/security." })
+        if (cpu.length > 0)
+            lines.push({ s: "OK", m: "CPU: " + cpu })
+        if (ram.length > 0)
+            lines.push({ s: "OK", m: "Memory: " + ram + " total" })
+        if (modules.length > 0)
+            lines.push({ s: "OK", m: "Loaded " + modules + " kernel modules." })
+        lines.push({ s: "OK", m: "Started Udev Coldplug all Devices." })
+        lines.push({ s: "OK", m: "Started Network Manager." })
+        lines.push({ s: "OK", m: "Reached target Graphical Interface." })
+        lines.push({ s: "OK", m: "Started SDDM Display Manager." })
+        lines.push({ s: "OK", m: "Welcome to " + realDistro + "." })
+        bootLog = lines
+    }
 
     // ─── Clock ────────────────────────────────────────────────────────────────
     Text {
