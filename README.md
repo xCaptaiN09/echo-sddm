@@ -85,6 +85,14 @@ QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /usr/share/sddm/t
 
 > `QML_XHR_ALLOW_FILE_READ=1` is only needed in test mode. Real SDDM reads system files automatically.
 
+### Important: Qt6 Greeter
+
+This theme requires the Qt6 greeter. If SDDM fails to load the theme, make sure it uses the Qt6 greeter:
+
+```bash
+sudo ln -sf /usr/bin/sddm-greeter-qt6 /usr/bin/sddm-greeter
+```
+
 ---
 
 ## Configuration
