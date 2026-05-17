@@ -42,27 +42,27 @@ BACKUP_DIR=$(mktemp -d)
 if [ -d "${THEME_DIR}" ]; then
     echo -e "${BLUE}==>${NC} Backing up user configurations..."
     [ -f "${THEME_DIR}/theme.conf" ] && cp "${THEME_DIR}/theme.conf" "${BACKUP_DIR}/"
-    [ -f "${THEME_DIR}/background.png" ] && cp "${THEME_DIR}/background.png" "${BACKUP_DIR}/"
-    [ -f "${THEME_DIR}/background.jpg" ] && cp "${THEME_DIR}/background.jpg" "${BACKUP_DIR}/"
+    [ -f "${THEME_DIR}/assets/backgrounds/background.png" ] && cp "${THEME_DIR}/assets/backgrounds/background.png" "${BACKUP_DIR}/"
+    [ -f "${THEME_DIR}/assets/backgrounds/background.jpg" ] && cp "${THEME_DIR}/assets/backgrounds/background.jpg" "${BACKUP_DIR}/"
 
     echo -e "${BLUE}==>${NC} Cleaning old version..."
     rm -rf "${THEME_DIR}"
 fi
 
 echo -e "${BLUE}==>${NC} Installing Echo to ${THEME_DIR}..."
-mkdir -p "${THEME_DIR}"
+mkdir -p "${THEME_DIR}/assets/backgrounds" "${THEME_DIR}/assets/screenshots"
 cp -r Main.qml metadata.desktop theme.conf LICENSE "${THEME_DIR}/"
-# Copy wallpaper if present in repo
-[ -f background.png ] && cp background.png "${THEME_DIR}/"
-[ -f background.jpg ] && cp background.jpg "${THEME_DIR}/"
+cp -r assets/* "${THEME_DIR}/assets/"
+# Remove screenshots from installed theme (not needed at runtime)
+rm -rf "${THEME_DIR}/assets/screenshots"
 chmod -R 755 "${THEME_DIR}"
 
 # Restore user configurations if they were backed up
 if [ -f "${BACKUP_DIR}/theme.conf" ]; then
     echo -e "${BLUE}==>${NC} Restoring user configurations..."
     cp "${BACKUP_DIR}/theme.conf" "${THEME_DIR}/theme.conf"
-    [ -f "${BACKUP_DIR}/background.png" ] && cp "${BACKUP_DIR}/background.png" "${THEME_DIR}/background.png"
-    [ -f "${BACKUP_DIR}/background.jpg" ] && cp "${BACKUP_DIR}/background.jpg" "${THEME_DIR}/background.jpg"
+    [ -f "${BACKUP_DIR}/background.png" ] && cp "${BACKUP_DIR}/background.png" "${THEME_DIR}/assets/backgrounds/background.png"
+    [ -f "${BACKUP_DIR}/background.jpg" ] && cp "${BACKUP_DIR}/background.jpg" "${THEME_DIR}/assets/backgrounds/background.jpg"
     # Ensure use_24h option is present in older configs
     if ! grep -q "^use_24h=" "${THEME_DIR}/theme.conf"; then
         sed -i '/^boot_interval=/a use_24h=true' "${THEME_DIR}/theme.conf"

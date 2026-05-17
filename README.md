@@ -1,78 +1,153 @@
 # Echo SDDM
 
-macOS Terminal-style SDDM login theme by xCaptaiN09.
+A macOS Terminal-inspired SDDM login theme. Dark monospace aesthetic, frosted glass, boot animation with real system data, and two login modes.
 
-## Requirements
+<div align="center">
+  <img src="assets/screenshots/pure.png" width="45%" alt="Pure Mode" />
+  <img src="assets/screenshots/frosted.png" width="45%" alt="Frosted Mode" />
+</div>
 
-- SDDM 0.20+
-- Qt 6 + `qt6-5compat` — `sudo pacman -S qt6-5compat`
-- Qt 5 users: replace `Qt5Compat.GraphicalEffects` with `QtGraphicalEffects 1.0` in `Main.qml`
-- JetBrains Mono — `sudo pacman -S ttf-jetbrains-mono`
+## Features
 
-## Install
+- **macOS Terminal UI:** Dark window with traffic light buttons (shutdown, reboot, suspend), title bar, and rounded corners.
+- **Real Boot Animation:** Fake systemd log lines generated from your actual hardware — CPU, RAM, kernel, modules, distro.
+- **Two Background Modes:** Pure black or frosted glass (wallpaper + blur).
+- **Two Login Modes:** Arrow-key user/session picker or TTY-style manual login.
+- **Real System Info:** Hostname, distro, kernel version, uptime — all read live from `/proc` and `/etc/os-release`.
+- **24h/12h Clock:** Configurable via `theme.conf`.
+
+---
+
+## Prerequisites
+
+Qt6 with qt6-5compat (for FastBlur and OpacityMask):
 
 ```bash
-sudo cp -r echo-sddm /usr/share/sddm/themes/
+# Arch
+sudo pacman -S qt6-declarative qt6-5compat
+
+# Fedora
+sudo dnf install qt6-qtdeclarative qt6-qt5compat
+
+# Debian 13/Testing
+sudo apt install libqt6quick6 libqt6qml6 qt6-5compat-dev
 ```
 
-Set in `/etc/sddm.conf` or `/etc/sddm.conf.d/theme.conf`:
-```ini
-[Theme]
-Current=echo-sddm
+JetBrains Mono font must be installed (or set a different font in `theme.conf`).
+
+---
+
+## Installation
+
+### Method A: Install Script (Recommended)
+
+```bash
+git clone https://github.com/xCaptaiN09/echo-sddm.git
+cd echo-sddm
+sudo ./install.sh
 ```
+
+The script backs up your existing config, installs the theme, and restores your settings.
+
+### Method B: Arch Linux (AUR)
+
+```bash
+yay -S echo-sddm-git
+```
+
+### Method C: Manual
+
+1. Copy to SDDM themes directory:
+   ```bash
+   sudo cp -r echo-sddm /usr/share/sddm/themes/echo
+   ```
+2. Set the theme:
+   ```ini
+   # /etc/sddm.conf.d/theme.conf
+   [Theme]
+   Current=echo
+   ```
+
+---
+
+## Testing
+
+Preview without logging out:
+
+```bash
+QML_XHR_ALLOW_FILE_READ=1 sddm-greeter-qt6 --test-mode --theme /path/to/echo-sddm
+```
+
+> `QML_XHR_ALLOW_FILE_READ=1` is only needed in test mode. Real SDDM reads system files automatically.
+
+---
 
 ## Configuration
 
-Edit `/usr/share/sddm/themes/echo-sddm/theme.conf`:
+Edit `theme.conf`:
 
-| Key | Values | Default |
-|-----|--------|---------|
-| `type` | `pure` / `frosted` | `pure` |
-| `login_mode` | `select` / `tty` | `select` |
-| `background` | path to wallpaper | _(empty)_ |
-| `font` | any installed monospace | `JetBrains Mono` |
-| `font_size` | integer (pixels) | `14` |
-| `boot_interval` | integer (ms per line) | `72` |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `type` | `pure` | `pure` (black) or `frosted` (wallpaper + blur) |
+| `login_mode` | `select` | `select` (arrow keys) or `tty` (type username) |
+| `background` | *(empty)* | Wallpaper path for frosted mode |
+| `font` | `JetBrains Mono` | Any installed monospace font |
+| `font_size` | `14` | Font size in pixels |
+| `boot_interval` | `72` | Milliseconds per boot log line |
+| `use_24h` | `true` | `true` for 24h, `false` for 12h with AM/PM |
 
-## Modes
+### Frosted Glass
 
-**`login_mode=select`**
-```
-user:     captain  ◀ ▶
-session:  hyprland ◀ ▶
-password: _
-```
-Left/Right arrows cycle users and sessions. Tab moves between rows.
+Set `type=frosted` and point `background` to a wallpaper:
 
-**`login_mode=tty`**
-```
-cupida login: _
-Password: _
-
-[F1] [F2] session: hyprland
-```
-Type username and password like a real TTY. F1/F2 switch session.
-
-**`type=frosted`**
-Set `background=` to an absolute path or a path relative to the theme directory.
 ```ini
 type=frosted
-background=assets/wallpaper.jpg
+background=assets/backgrounds/background.png
 ```
+
+### TTY Mode
+
+Set `login_mode=tty` for a real Linux TTY-style login:
+
+```ini
+login_mode=tty
+```
+
+Type your username, press Enter, type password, press Enter to login. F1/F2 cycles sessions.
+
+---
+
+## Keyboard Controls
+
+### Select Mode
+| Key | Action |
+|-----|--------|
+| Left / Right | Cycle users or sessions |
+| Tab / Down | Next row |
+| Up / Shift+Tab | Previous row |
+| Enter | Submit login |
+
+### TTY Mode
+| Key | Action |
+|-----|--------|
+| F1 / F2 | Cycle sessions |
+| Enter | Submit field / login |
+| Tab | Switch between username and password |
+
+---
 
 ## Traffic Lights
 
 | Button | Action |
 |--------|--------|
-| 🔴 Red | Shutdown |
-| 🟡 Yellow | Reboot |
-| 🟢 Green | Suspend |
+| Red | Shutdown |
+| Yellow | Reboot |
+| Green | Suspend |
 
-## Real System Info
+---
 
-The sysinfo line reads live from disk:
-- Hostname — `sddm.hostName`
-- Distro — `/etc/os-release`
-- Kernel — `/proc/version`
-- Uptime — `/proc/uptime`
-- Time — system clock
+## Credits
+
+- **Author:** [xCaptaiN09](https://github.com/xCaptaiN09)
+- **Design:** Inspired by macOS Terminal.app
+- **Font:** JetBrains Mono (system font, not bundled)
