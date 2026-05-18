@@ -14,10 +14,10 @@ A macOS Terminal-inspired SDDM login theme. Dark monospace aesthetic, frosted gl
 ## Features
 
 - **macOS Terminal UI:** Dark window with traffic light buttons (shutdown, reboot, suspend), title bar, and rounded corners.
-- **Boot Animation:** systemd-style log lines with real hardware detection (CPU, RAM, modules, vendor) when available.
+- **Boot Animation:** Animated systemd-style boot log lines on every login.
 - **Two Background Modes:** Pure black or frosted glass (wallpaper + blur).
 - **Two Login Modes:** Arrow-key user/session picker or TTY-style manual login.
-- **System Info:** Hostname, distro, uptime, and date/time in the info bar.
+- **System Info:** Hostname, distro, and date/time shown live in the info bar.
 - **Lock Indicators:** Caps Lock and Num Lock warnings inline.
 - **Terminal-Style Errors:** Login failures show as inline red text, not centered banners.
 - **24h/12h Clock:** Configurable via `theme.conf`.
@@ -47,13 +47,7 @@ sudo apt install sddm libqt6quick6 libqt6qml6 qt6-5compat-dev
 
 ## Installation
 
-### Method A: Arch Linux (AUR)
-
-```bash
-yay -S echo-sddm-git
-```
-
-### Method B: Install Script
+### Method A: Install Script
 
 ```bash
 git clone https://github.com/xCaptaiN09/echo-sddm.git
@@ -62,6 +56,12 @@ sudo ./install.sh
 ```
 
 The script checks for `qt6-5compat`, backs up your existing config, installs the theme, and restores your settings.
+
+### Method B: Arch Linux (AUR)
+
+```bash
+yay -S echo-sddm-git
+```
 
 ### Method C: Manual
 
@@ -181,4 +181,4 @@ Type your username, press Enter, type password, press Enter to login. F1/F2 cycl
 
 ---
 
-*Made with ❤️ for the Linux community.*
+*Made with ❤️ for the Linux community*
