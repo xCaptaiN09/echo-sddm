@@ -32,6 +32,14 @@ Rectangle {
     property string realKernel: ""
     property string realUptime: ""
 
+    // Adaptive text colors: brighter in frosted mode for readability
+    property bool isFrosted: bgImage.visible
+    property string txtDim:    isFrosted ? "#88888c" : "#444448"
+    property string txtMid:    isFrosted ? "#a0a0a8" : "#636368"
+    property string txtBright: isFrosted ? "#c0c0c8" : "#bebec2"
+    property string txtOrange: isFrosted ? "#f0b060" : "#e8a041"
+    property string clockClr:  isFrosted ? "#a0a0a8" : "#3e3e42"
+
     function readFile(path) {
         try {
             var xhr = new XMLHttpRequest()
@@ -320,7 +328,7 @@ Rectangle {
                 text:           ">_  " + dispHost + " — zsh — 80x24"
                 font.family:    cfgFont
                 font.pixelSize: 13
-                color:          "#636368"
+                color:          txtMid
             }
         }
 
@@ -340,13 +348,13 @@ Rectangle {
                 model: bootStep
                 delegate: Row {
                     spacing: 0
-                    Text { text: "[ ";  font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: "[ ";  font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                     Text {
                         text:  bootLog[index].s === "OK" ? " OK " : "FAIL"
                         font.family: cfgFont; font.pixelSize: fontSize
                         color: bootLog[index].s === "OK" ? "#4ec94e" : "#e05252"
                     }
-                    Text { text: " ] " + bootLog[index].m; font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: " ] " + bootLog[index].m; font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                 }
             }
 
@@ -358,7 +366,7 @@ Rectangle {
                 visible: bootDone
                 opacity: 0.0
                 Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
-                font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
+                font.family: cfgFont; font.pixelSize: fontSize; color: txtBright
                 property string curTime: Qt.formatTime(new Date(), timeFmt)
                 text: dispHost + "  |  " + realDistro
                     + (realUptime.length > 0 ? "  |  up " + realUptime : "")
@@ -380,7 +388,7 @@ Rectangle {
 
                 Row {
                     spacing: 0
-                    Text { text: dispHost + " login: "; font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: dispHost + " login: "; font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                     TextInput {
                         id: ttyUser
                         font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
@@ -394,7 +402,7 @@ Rectangle {
                         }
                     }
                     Rectangle {
-                        width: 9; height: fontSize + 3; color: "#bebec2"
+                        width: 9; height: fontSize + 3; color: txtBright
                         visible: ttyUser.activeFocus
                         SequentialAnimation on opacity {
                             running: visible; loops: Animation.Infinite
@@ -408,7 +416,7 @@ Rectangle {
 
                 Row {
                     spacing: 0
-                    Text { text: "Password: "; font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: "Password: "; font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                     TextInput {
                         id: ttyPwd
                         font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
@@ -424,7 +432,7 @@ Rectangle {
                         }
                     }
                     Rectangle {
-                        width: 9; height: fontSize + 3; color: "#bebec2"
+                        width: 9; height: fontSize + 3; color: txtBright
                         visible: ttyPwd.activeFocus
                         SequentialAnimation on opacity {
                             running: visible; loops: Animation.Infinite
@@ -451,8 +459,8 @@ Rectangle {
                 Item { width: 1; height: 10 }
                 Row {
                     spacing: 0
-                    Text { text: "[F1] [F2] session: "; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#444448" }
-                    Text { text: sessName(ttySession); font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#636368" }
+                    Text { text: "[F1] [F2] session: "; font.family: cfgFont; font.pixelSize: fontSize - 1; color: txtDim }
+                    Text { text: sessName(ttySession); font.family: cfgFont; font.pixelSize: fontSize - 1; color: txtMid }
                 }
             }
 
@@ -467,8 +475,8 @@ Rectangle {
 
                 Row {
                     spacing: 0
-                    Text { text: "user:     "; font.family: cfgFont; font.pixelSize: fontSize; color: "#e8a041" }
-                    Text { text: userName(userIdx); font.family: cfgFont; font.pixelSize: fontSize; color: "#e8a041" }
+                    Text { text: "user:     "; font.family: cfgFont; font.pixelSize: fontSize; color: txtOrange }
+                    Text { text: userName(userIdx); font.family: cfgFont; font.pixelSize: fontSize; color: txtOrange }
                     Text {
                         text: "  ◀ ▶"; font.family: cfgFont; font.pixelSize: fontSize
                         color: focusRow === 0 ? "#e8a041" : "#444448"
@@ -477,8 +485,8 @@ Rectangle {
                 }
                 Row {
                     spacing: 0
-                    Text { text: "session:  "; font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
-                    Text { text: sessName(sessIdx); font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: "session:  "; font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
+                    Text { text: sessName(sessIdx); font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                     Text {
                         text: "  ◀ ▶"; font.family: cfgFont; font.pixelSize: fontSize
                         color: focusRow === 1 ? "#ffffff" : "#444448"
@@ -487,7 +495,7 @@ Rectangle {
                 }
                 Row {
                     spacing: 0
-                    Text { text: "password: "; font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2" }
+                    Text { text: "password: "; font.family: cfgFont; font.pixelSize: fontSize; color: txtBright }
                     TextInput {
                         id: pwdInput
                         font.family: cfgFont; font.pixelSize: fontSize; color: "#bebec2"
@@ -501,7 +509,7 @@ Rectangle {
                         Keys.onUpPressed:      function(e) { e.accepted = true; focusRow = 1; root.forceActiveFocus() }
                     }
                     Rectangle {
-                        width: 9; height: fontSize + 3; color: "#bebec2"
+                        width: 9; height: fontSize + 3; color: txtBright
                         visible: pwdInput.activeFocus
                         SequentialAnimation on opacity {
                             running: visible; loops: Animation.Infinite
@@ -533,13 +541,13 @@ Rectangle {
                 width: parent.width
 
                 Row {
-                    visible: sddm.capsLock !== undefined && sddm.capsLock
+                    visible: typeof keyboard !== "undefined" && keyboard.capsLock
                     spacing: 4
                     Text { text: "⚠"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
                     Text { text: "Caps Lock is on"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
                 }
                 Row {
-                    visible: sddm.numLock !== undefined && sddm.numLock
+                    visible: typeof keyboard !== "undefined" && keyboard.numLock
                     spacing: 4
                     Text { text: "⚠"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
                     Text { text: "Num Lock is on"; font.family: cfgFont; font.pixelSize: fontSize - 1; color: "#e8853a" }
@@ -640,7 +648,7 @@ Rectangle {
         id: clockLabel
         anchors.top: parent.top; anchors.right: parent.right
         anchors.topMargin: 16; anchors.rightMargin: 20
-        font.family: cfgFont; font.pixelSize: 12; color: "#3e3e42"
+        font.family: cfgFont; font.pixelSize: 12; color: clockClr
         Component.onCompleted: text = Qt.formatDateTime(new Date(), dateTimeFmt)
         Timer { interval: 10000; running: true; repeat: true
             onTriggered: clockLabel.text = Qt.formatDateTime(new Date(), dateTimeFmt) }

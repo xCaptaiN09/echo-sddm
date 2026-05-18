@@ -7,9 +7,8 @@ A macOS Terminal-inspired SDDM login theme. Dark monospace aesthetic, frosted gl
   <img src="assets/screenshots/Screenshot_2.png" width="45%" />
 </div>
 <div align="center">
-  <img src="assets/screenshots/Screenshot_3.png" width="30%" />
-  <img src="assets/screenshots/Screenshot_4.png" width="30%" />
-  <img src="assets/screenshots/Screenshot_5.png" width="30%" />
+  <img src="assets/screenshots/Screenshot_3.png" width="45%" />
+  <img src="assets/screenshots/Screenshot_4.png" width="45%" />
 </div>
 
 ## Features
@@ -121,8 +120,8 @@ Edit `/usr/share/sddm/themes/echo/theme.conf` (or edit before running `install.s
 | `font_size` | `14` | Font size in pixels |
 | `boot_interval` | `72` | Milliseconds per boot log line |
 | `use_24h` | `false` | `true` for 24h, `false` for 12h with AM/PM |
-| `background_opacity` | `0.35` | Frosted glass opacity (0.0–1.0) |
-| `blur_radius` | `54` | Blur strength for frosted mode (0–100) |
+| `background_opacity` | `0.35` | Frosted glass opacity (0.1–1.0) |
+| `blur_radius` | `54` | Blur strength for frosted mode (1–100) |
 
 ### Frosted Glass
 
@@ -179,3 +178,7 @@ Type your username, press Enter, type password, press Enter to login. F1/F2 cycl
 ---
 
 *MIT License*
+
+---
+
+*Made with ❤️ for the Linux community.*
